@@ -60,6 +60,11 @@ const Nav = () => {
           redirectTo: 'https://archive-oracle.netlify.app/submit-meeting-summary',
         },
       })
+      
+      if (error) {
+        console.error('Discord sign-in error:', error);
+        alert(`Sign-in error: ${error.message}. Please ensure Discord OAuth is enabled in your Supabase project settings.`);
+      }
     }
   
     async function signout() {

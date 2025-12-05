@@ -18,6 +18,43 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Configuration
+
+### Discord OAuth Setup
+
+This application uses Supabase for authentication with Discord OAuth. To enable Discord sign-in, you need to configure it in both Discord and Supabase:
+
+#### 1. Create a Discord Application
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click "New Application" and give it a name
+3. Navigate to **OAuth2** → **General**
+4. Copy your **Client ID** and **Client Secret** (you'll need these for Supabase)
+5. Under **Redirects**, add your Supabase callback URL:
+   - Format: `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+   - Replace `YOUR_PROJECT_REF` with your actual Supabase project reference
+
+#### 2. Enable Discord Provider in Supabase
+
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project
+3. Navigate to **Authentication** → **Providers**
+4. Find **Discord** in the list of providers and click to configure
+5. Enable the Discord provider
+6. Enter your Discord **Client ID** and **Client Secret** from step 1
+7. Save the configuration
+
+#### 3. Environment Variables
+
+Make sure you have the following environment variables set:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+After completing these steps, Discord sign-in should work correctly.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
