@@ -252,6 +252,161 @@ Agenda items can have the following statuses:
 - `carry over`
 - `resolved`
 
+### Database Schema: The `summary` Column
+
+The `summary` column in the `meetingsummaries` table is a **JSONB** column that stores the complete meeting summary data structure. This column contains all the meeting information, agenda items, tags, and metadata.
+
+#### Table: `meetingsummaries`
+
+**Key Columns:**
+- `meeting_id` (UUID, primary key)
+- `name` (text) - Meeting type/name
+- `date` (timestamp) - Meeting date
+- `workgroup_id` (UUID) - Reference to workgroup
+- `user_id` (UUID) - User who created/updated the summary
+- `template` (text) - Template type (usually "custom")
+- `summary` (JSONB) - **Complete meeting summary data** (see structure below)
+- `updated_at` (timestamp) - Last update time
+
+**Unique Constraint:** `(name, date, workgroup_id, user_id)`
+
+#### The `summary` Column Structure
+
+The `summary` JSONB column contains the following structure:
+
+```json
+{
+  "workgroup": "Ambassador Town Hall",
+  "workgroup_id": "72ce0bc0-276e-4cde-bfb9-cdabc5ed953e",
+  "meetingInfo": {
+    "name": "Weekly",
+    "date": "2025-09-10",
+    "host": "John Doe",
+    "documenter": "Jane Smith",
+    "translator": "Bob Wilson",
+    "peoplePresent": "John Doe, Jane Smith, Bob Wilson, Alice",
+    "purpose": "Weekly update and planning",
+    "townHallNumber": "TH-042",
+    "googleSlides": "https://slides.example.com/presentation",
+    "meetingVideoLink": "https://video.example.com/watch?v=123",
+    "miroBoardLink": "https://miro.com/app/board/xyz",
+    "otherMediaLink": "https://example.com/media",
+    "transcriptLink": "https://example.com/transcript",
+    "mediaLink": "https://example.com/media/extra",
+    "workingDocs": [
+      {
+        "title": "Agenda",
+        "link": "https://docs.example.com/agenda"
+      },
+      {
+        "title": "Notes",
+        "link": "https://docs.example.com/notes"
+      }
+    ],
+    "timestampedVideo": {
+      "url": "https://youtube.com/watch?v=abcd",
+      "intro": "Welcome, agenda overview",
+      "timestamps": "00:00 Intro\n02:15 Topic A\n10:45 Decisions"
+    }
+  },
+  "agendaItems": [
+    {
+      "agenda": "Review last week and plan",
+      "status": "carry over",
+      "townHallUpdates": "Updates from last Town Hall.",
+      "townHallSummary": "Summary of decisions.",
+      "narrative": "We discussed project milestones.",
+      "meetingTopics": ["Budget", "Hiring"],
+      "issues": ["Blocked on API access"],
+      "actionItems": [
+        {
+          "text": "Draft budget proposal",
+          "assignee": "Alice",
+          "dueDate": "2025-09-20",
+          "status": "in progress"
+        }
+      ],
+      "decisionItems": [
+        {
+          "decision": "Adopt weekly standups",
+          "rationale": "Improve coordination",
+          "opposing": "May increase meeting load",
+          "effect": "affectsOnlyThisWorkgroup"
+        }
+      ],
+      "discussionPoints": ["Integration approach"],
+      "learningPoints": ["Tool X setup"]
+    }
+  ],
+  "tags": {
+    "topicsCovered": "inclusivity, transparency",
+    "emotions": "cheerful",
+    "other": "",
+    "gamesPlayed": "Chess"
+  },
+  "type": "custom",
+  "noSummaryGiven": false,
+  "canceledSummary": false,
+  "noSummaryGivenText": "No Summary Given",
+  "canceledSummaryText": "Meeting was cancelled"
+}
+```
+
+#### Key Fields in `summary.meetingInfo`
+
+- **`host`** - Facilitator name (displayed as "Facilitator" in UI)
+- **`documenter`** - Person documenting the meeting
+- **`translator`** - Translator (if applicable)
+- **`peoplePresent`** - Comma-separated list of attendees
+- **`workingDocs`** - Array of objects with `title` and `link`
+- **`timestampedVideo`** - Object with `url`, `intro`, and `timestamps` (string)
+
+#### Querying the `summary` Column
+
+**PostgreSQL/Supabase JSON Queries:**
+
+```sql
+-- Get facilitator (host) from a meeting summary
+SELECT summary->'meetingInfo'->>'host' as facilitator
+FROM meetingsummaries
+WHERE meeting_id = 'your-meeting-id';
+
+-- Get all action items
+SELECT summary->'agendaItems'->0->'actionItems' as action_items
+FROM meetingsummaries
+WHERE meeting_id = 'your-meeting-id';
+
+-- Filter by workgroup in summary
+SELECT *
+FROM meetingsummaries
+WHERE summary->>'workgroup' = 'Ambassador Town Hall';
+
+-- Get meetings with specific facilitator
+SELECT *
+FROM meetingsummaries
+WHERE summary->'meetingInfo'->>'host' = 'John Doe';
+```
+
+**JavaScript/TypeScript Access:**
+
+```javascript
+// Access facilitator
+const facilitator = summary.meetingInfo.host;
+
+// Access action items from first agenda item
+const actionItems = summary.agendaItems[0].actionItems;
+
+// Access working docs
+const workingDocs = summary.meetingInfo.workingDocs;
+```
+
+#### Notes
+
+- The `summary` column stores the complete meeting data as JSON, allowing flexible querying
+- All meeting content (except metadata like `date`, `name`, `workgroup_id`) is stored in this column
+- The structure matches the `summaryFormData` schema defined in `types/summaryFormData.schema.json`
+- When updating, the entire `summary` object is typically replaced (upserted)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
