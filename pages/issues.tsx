@@ -21,10 +21,19 @@ const Issues: NextPage = () => {
     setLoading(true);
     const issues = await fetchIssues();
     //console.log(issues)
-    const open = issues.filter((issue: Issue) => issue.state === 'open');
-    const closed = issues.filter((issue: Issue) => issue.state === 'closed');
-    setOpenIssues(open);
-    setClosedIssues(closed);
+    
+    // Ensure issues is an array before filtering
+    if (Array.isArray(issues)) {
+      const open = issues.filter((issue: Issue) => issue.state === 'open');
+      const closed = issues.filter((issue: Issue) => issue.state === 'closed');
+      setOpenIssues(open);
+      setClosedIssues(closed);
+    } else {
+      console.error("Issues is not an array:", issues);
+      setOpenIssues([]);
+      setClosedIssues([]);
+    }
+    
     setLoading(false);
   }
 
