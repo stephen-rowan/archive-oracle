@@ -1,22 +1,178 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Archive Oracle
+
+Archive Oracle is a web application for managing and archiving meeting summaries, built with [Next.js](https://nextjs.org/) and [Supabase](https://supabase.com/).
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Architecture Overview](#architecture-overview)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [Glossary](#glossary)
+- [Configuration](#configuration)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+Before you begin, ensure you have the following installed:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Node.js** (version 20.3.1 or higher) - JavaScript runtime environment
+- **npm** (comes with Node.js) - Package manager for JavaScript
+- **Git** - Version control system
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-org/archive-oracle.git
+   cd archive-oracle
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**:
+   Create a `.env.local` file in the project root:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SERVER_API_KEY=your_server_api_key
+   DISCORD_BOT_TOKEN=your_discord_bot_token
+   ```
+
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**:
+   Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
+
+For detailed setup instructions, including how to obtain API keys and configure external services, see the [Getting Started Guide](docs/guides/getting-started.md).
+
+### Quick Start
+
+After installation, you can:
+- View meeting summaries on the homepage
+- Submit new meeting summaries via `/submit-meeting-summary`
+- Access admin tools at `/admin-tools`
+- Review API documentation in `docs/api/`
+
+## Architecture Overview
+
+Archive Oracle is built using modern web technologies and follows a component-based architecture.
+
+### Technology Stack
+
+- **Next.js 14.2.8**: React framework providing server-side rendering, routing, and API routes
+- **React 18.2.0**: JavaScript library for building user interfaces with reusable components
+- **TypeScript 5.1.3**: Typed JavaScript that helps catch errors during development
+- **Supabase**: Backend-as-a-service platform providing:
+  - PostgreSQL database (stores meeting summaries, workgroups, users)
+  - Authentication (Discord OAuth integration)
+  - Real-time capabilities
+- **Netlify**: Hosting platform providing:
+  - Static site hosting
+  - Serverless functions (Netlify Functions)
+  - Continuous deployment
+
+### System Components
+
+1. **Frontend (Next.js Pages)**
+   - User interface built with React components
+   - Pages for viewing, submitting, and managing meeting summaries
+   - Client-side routing and state management
+
+2. **API Routes (`pages/api/`)**
+   - RESTful API endpoints for data operations
+   - Authentication and authorization
+   - Integration with external services (Discord, GitHub, Google Docs)
+
+3. **Database (Supabase PostgreSQL)**
+   - `meetingsummaries` table: Stores meeting summary data in JSONB format
+   - `workgroups` table: Defines workgroup configurations and templates
+   - `users` table: User accounts and roles
+   - `names` table: Approved contributor names
+
+4. **Serverless Functions (Netlify Functions)**
+   - Batch operations for updating meeting summaries
+   - Scheduled tasks and automation
+
+5. **External Integrations**
+   - Discord: Authentication and role management
+   - GitHub: Repository operations and issue tracking
+   - Google Docs: Document generation and management
+
+For detailed architecture documentation, see [docs/architecture/](docs/architecture/). For directory structure, see [docs/guides/directory-structure.md](docs/guides/directory-structure.md).
+
+## API Documentation
+
+Archive Oracle provides RESTful API endpoints for programmatic access to meeting summary data.
+
+### Available Endpoints
+
+- **GET `/api/getApprovedNames`**: Fetch approved contributor names
+  - See [API Documentation](docs/api/getApprovedNames.md) for details
+
+- **POST `/api/upsertMeetingSummary`**: Create or update meeting summaries
+  - See [API Documentation](docs/api/upsertMeetingSummary.md) for details
+
+### Authentication
+
+API endpoints require authentication using an API key passed in the request header:
+- Header: `api_key: YOUR_SERVER_API_KEY` or `x-api-key: YOUR_SERVER_API_KEY`
+
+### Full API Documentation
+
+Complete API documentation is available in the [`docs/api/`](docs/api/) directory:
+- [Get Approved Names API](docs/api/getApprovedNames.md)
+- [Upsert Meeting Summary API](docs/api/upsertMeetingSummary.md)
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+
+- Code style and conventions
+- Development process
+- Submitting pull requests
+- Documentation standards
+
+### Quick Links
+
+- [Getting Started Guide](docs/guides/getting-started.md) - Setup instructions
+- [Directory Structure Guide](docs/guides/directory-structure.md) - Project organization
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute
+
+## Glossary
+
+This glossary explains technical terms used throughout the project:
+
+- **Next.js**: React framework that provides server-side rendering, file-based routing, and API routes. It simplifies building React applications with built-in optimizations.
+
+- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript. It adds static type checking to help catch errors during development.
+
+- **Supabase**: A backend-as-a-service (BaaS) platform that provides a PostgreSQL database, authentication, real-time subscriptions, and storage. It's an open-source alternative to Firebase.
+
+- **PostgreSQL**: An open-source relational database management system. Supabase uses PostgreSQL as its underlying database engine.
+
+- **JSONB**: PostgreSQL's binary JSON format for storing structured data. It allows efficient storage and querying of JSON documents in the database.
+
+- **OAuth**: An authentication protocol that allows users to log in with third-party services (like Discord) without sharing their passwords. The application uses Discord OAuth for user authentication.
+
+- **Netlify Functions**: Serverless functions that run on Netlify's infrastructure. They allow you to run backend code without managing servers, similar to AWS Lambda.
+
+- **React**: A JavaScript library for building user interfaces. It uses a component-based architecture where UI is built from reusable components.
+
+- **UUID**: Universally Unique Identifier - a 128-bit identifier used to uniquely identify entities (users, workgroups, meetings) in the database.
+
+- **CORS**: Cross-Origin Resource Sharing - a security mechanism that allows web pages to make requests to a different domain than the one serving the web page.
+
+- **API Key**: A secret token used to authenticate API requests and ensure only authorized clients can access endpoints.
+
+- **Serverless**: A cloud computing model where code runs in stateless functions that are automatically managed by the cloud provider, eliminating the need to manage servers.
 
 ## Configuration
 
@@ -407,19 +563,30 @@ const workingDocs = summary.meetingInfo.workingDocs;
 - The structure matches the `summaryFormData` schema defined in `types/summaryFormData.schema.json`
 - When updating, the entire `summary` object is typically replaced (upserted)
 
-## Learn More
+## Additional Resources
 
-To learn more about Next.js, take a look at the following resources:
+### Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Getting Started Guide](docs/guides/getting-started.md) - Detailed setup and installation
+- [Directory Structure Guide](docs/guides/directory-structure.md) - Understanding the project organization
+- [API Documentation](docs/api/) - Complete API reference
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to the project
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### External Resources
 
-## Deploy on Vercel
+- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
+- [Supabase Documentation](https://supabase.com/docs) - Supabase platform documentation
+- [React Documentation](https://react.dev/) - React library documentation
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/) - TypeScript language reference
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This application is deployed on **Netlify**, which provides:
+- Automatic deployments from Git
+- Serverless function hosting
+- CDN for static assets
+- Environment variable management
+
+For deployment configuration, see `netlify.toml` in the repository root.
 
 Archive data last updated at - 2025-12-05 01:06:20 UTC

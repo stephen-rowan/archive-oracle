@@ -1,7 +1,9 @@
 ## Upsert Meeting Summary API
 
 ### Overview
-Create or update a meeting summary record in the `meetingsummaries` table. This endpoint requires an API key and uses server-side Supabase service-role access.
+Create or update a meeting summary record in the `meetingsummaries` table. This endpoint requires an API key and uses server-side **Supabase** (a backend-as-a-service platform providing PostgreSQL database) service-role access. The term **"upsert"** means "update or insert" - if a record exists, it's updated; if not, it's created.
+
+**Related Components**: This endpoint is used by meeting summary submission forms, particularly the `SubmitMissingSummary.tsx` component and the `/submit-meeting-summary` page. The `SummaryTemplate.tsx` component displays the data structure that this endpoint accepts. See the [Directory Structure Guide](../guides/directory-structure.md) for component locations.
 
 ### Endpoint
 - Method: POST
@@ -17,8 +19,8 @@ Create or update a meeting summary record in the `meetingsummaries` table. This 
 ### Request Body
 Required fields:
 - `workgroup` (string): Human-readable workgroup name
-- `workgroup_id` (string, UUID)
-- `user_id` (string, UUID): User to associate with the summary
+- `workgroup_id` (string, UUID): **UUID** (Universally Unique Identifier) is a 128-bit identifier used to uniquely identify entities
+- `user_id` (string, UUID): User to associate with the summary (also a UUID)
 - `meetingInfo` (object):
   - `name` (string)
   - `date` (string, format `YYYY-MM-DD`)
@@ -37,9 +39,9 @@ Validation rules:
 - If provided, `agendaItems` must be an array
 
 ### Behavior
-- Upsert into `meetingsummaries` using composite uniqueness on `(name, date, workgroup_id, user_id)`
-- `date` is normalized to ISO at midnight UTC
-- The full payload is stored in `summary` with defaults applied
+- Upsert into `meetingsummaries` using composite uniqueness on `(name, date, workgroup_id, user_id)` - **composite uniqueness** means the combination of these four fields must be unique
+- `date` is normalized to **ISO** (International Organization for Standardization) format at midnight **UTC** (Coordinated Universal Time, the primary time standard)
+- The full payload is stored in `summary` (a **JSONB** column - PostgreSQL's binary JSON format for storing structured data) with defaults applied
 - `template` is set from `type`
 - `updated_at` is set server-side
 

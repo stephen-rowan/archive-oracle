@@ -1,3 +1,10 @@
+<!--
+DEPRECATED: This file was archived on 2025-01-23
+Reason: Alternative implementation using Discord API directly. Not referenced anywhere in codebase.
+Replacement: Use pages/api/userRoles.ts which fetches roles from Supabase database instead.
+Note: This was an alternative approach that fetched user roles directly from Discord API rather than from the database.
+-->
+
 import axios from 'axios';
 
 export default async function handler(req: any, res: any) {
