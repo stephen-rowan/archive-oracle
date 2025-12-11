@@ -14,6 +14,7 @@
 - Q: For required database fields with no corresponding JSON data, how should synthetic values be generated? → A: Deterministic based on context — derive values from JSON context (e.g., hash workgroup name for workgroup_id, use meeting date for timestamps)
 - Q: Where should the generated files (seed.sql, mapping.json, TESTDATA.md) be written, and what should the tool's interface look like? → A: Same directory as JSON input — write files next to the input JSON file
 - Q: What is the expected structure of the input JSON file? → A: Array of objects — single JSON file containing array of meeting summary objects `[{...}, {...}]`
+- Q: How does the system handle very large JSON files (e.g., thousands of meeting summaries)? → A: Hybrid approach with threshold — stream/process incrementally if file exceeds 1000 meeting summaries, otherwise load into memory
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -73,7 +74,7 @@ A developer needs clear instructions on how to use the generated seed data files
 - **Unknown JSON fields**: When JSON contains fields that don't exist in the schema, the system logs warnings but continues processing, ignoring unmapped fields.
 - **Empty arrays or null values**: Empty arrays are skipped (no rows created). Null values in nested structures are handled according to schema constraints (NOT NULL fields require synthetic values or cause record skip with logging).
 - **Missing required fields without defaults**: When required database fields have no corresponding JSON data and no reasonable default exists, the system logs an error, skips the record, and continues processing.
-- How does the system handle very large JSON files (e.g., thousands of meeting summaries)?
+- **Very large JSON files**: When JSON file contains more than 1000 meeting summaries, the system uses stream/incremental processing to avoid excessive memory consumption. For files with 1000 or fewer records, the system loads the entire JSON into memory for simpler processing. This hybrid approach balances performance and memory efficiency.
 - **Broken foreign key relationships**: When foreign key relationships cannot be established (e.g., workgroup_id references a non-existent workgroup), the system logs an error, skips the dependent record, and continues processing remaining records.
 
 ## Requirements *(mandatory)*
@@ -102,6 +103,7 @@ A developer needs clear instructions on how to use the generated seed data files
 - **FR-016**: System MUST document which tables contain test data and which are intentionally left empty
 - **FR-017**: System MUST handle nested collections (agendaItems, decisionItems, actionItems) by creating one row per element
 - **FR-018**: System MUST extract unique people from comma-separated lists and create appropriate person records and join table entries
+- **FR-023**: System MUST use stream/incremental processing for JSON files containing more than 1000 meeting summaries to manage memory efficiently, and MAY use in-memory processing for files with 1000 or fewer records
 
 ### Key Entities *(include if feature involves data)*
 
@@ -126,6 +128,7 @@ A developer needs clear instructions on how to use the generated seed data files
 - **SC-006**: Documentation enables developers to load seed data into local database without external help (measured by successful independent execution following documentation)
 - **SC-007**: Mapping documentation covers 100% of JSON fields that map to database columns
 - **SC-008**: System handles JSON files containing at least 127 meeting summaries without errors or performance degradation
+- **SC-009**: System efficiently processes JSON files containing up to 1000 meeting summaries using in-memory processing, and handles larger files (1000+ records) using stream/incremental processing without memory exhaustion
 
 ## Assumptions
 
