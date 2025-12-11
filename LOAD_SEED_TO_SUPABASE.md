@@ -35,6 +35,15 @@ This guide shows you how to upload/load your generated `seed.sql` file to Supaba
 supabase start
 ```
 
+**Note**: If you encounter an "unhealthy" auth container error (common on Apple Silicon Macs), use:
+```bash
+# Start Supabase with health check bypass
+supabase start --ignore-health-check
+
+# Or use the npm script
+npm run supabase:start
+```
+
 This will start a local PostgreSQL instance on port `54322`.
 
 ### Step 2: Copy seed.sql to Supabase Directory
@@ -104,11 +113,14 @@ PGPASSWORD=postgres psql -h localhost -p 54322 -U postgres -d postgres -f test-o
 
    **Note**: This requires your seed file to be in `supabase/seed.sql` or configured in `config.toml`.
 
-### Option B: Using db execute (Direct SQL execution)
+### Option B: Using psql (Direct SQL execution)
 
 ```bash
-# Execute seed.sql directly on remote database
-supabase db execute -f test-output/seed.sql
+# For local Supabase - Execute seed.sql directly
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/seed.sql
+
+# Or using supabase db psql
+supabase db psql -f supabase/seed.sql
 ```
 
 ### Option C: Using psql with connection string
@@ -154,8 +166,9 @@ If you want to use multiple seed files or organize them differently:
 
 ### Local Development
 ```bash
-# Start Supabase
-supabase start
+# Start Supabase (use --ignore-health-check if auth container is unhealthy)
+supabase start --ignore-health-check
+# Or: npm run supabase:start
 
 # Copy seed file
 cp test-output/seed.sql supabase/seed.sql
@@ -195,6 +208,18 @@ ls -la supabase/seed.sql
 - For local: Make sure `supabase start` is running
 - For remote: Verify you're logged in: `supabase login`
 - Check project is linked: `supabase projects list`
+
+### Issue: "supabase_auth container is not ready: unhealthy"
+**Solution**: 
+This is a known issue on some systems (especially Apple Silicon Macs) where Docker's health check fails due to architecture mismatches. The auth service is actually working correctly. Use:
+```bash
+# Start with health check bypass
+supabase start --ignore-health-check
+
+# Or use the npm script
+npm run supabase:start
+```
+The services will function normally despite the health check warning.
 
 ### Issue: "Foreign key constraint violation"
 **Solution**: 
@@ -260,7 +285,8 @@ node scripts/generate-seed-data.js your-meetings.json
 ./verify-outputs.sh test-output
 
 # 3. Start local Supabase (if not running)
-supabase start
+supabase start --ignore-health-check
+# Or: npm run supabase:start
 
 # 4. Copy seed file
 cp test-output/seed.sql supabase/seed.sql
