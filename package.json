@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify:project": "./scripts/verify-supabase-project.sh",
+    "verify:data": "./scripts/verify-supabase-data.sh",
+    "verify": "npm run verify:project && npm run verify:data",
+    "check:empty": "./scripts/check-empty-database.sh"
   },
   "dependencies": {
     "@octokit/rest": "^20.0.1",

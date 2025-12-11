@@ -43,12 +43,60 @@ Before you begin, ensure you have the following installed:
    DISCORD_BOT_TOKEN=your_discord_bot_token
    ```
 
-4. **Run the development server**:
+4. **⚠️ Verify Supabase project connection** (IMPORTANT):
+   
+   This repository is configured to connect **ONLY** to the test Supabase project. Before proceeding, verify you're connected to the correct project:
+   
+   **a. Verify project connection:**
+   ```bash
+   # Using npm (recommended)
+   npm run verify:project
+   
+   # Or directly
+   ./scripts/verify-supabase-project.sh
+   ```
+   
+   This script checks that the repository is linked to the test project (`lhpdnxaqydoeyqmbffow`). If it fails, you'll see instructions to fix it.
+   
+   **b. Verify database structure:**
+   ```bash
+   # Using npm (recommended)
+   npm run verify:data
+   
+   # Or directly
+   ./scripts/verify-supabase-data.sh
+   ```
+   
+   **Run both verifications at once:**
+   ```bash
+   npm run verify
+   ```
+   
+   This script verifies that all required database tables exist:
+   - `workgroups` - Workgroup configurations
+   - `meetingsummaries` - Meeting summary data
+   - `names` - Approved contributor names
+   - `tags` - Meeting tags
+   
+   If tables are missing, run migrations:
+   ```bash
+   supabase db push
+   ```
+   
+   **Expected test project:**
+   - **Project Reference ID:** `lhpdnxaqydoeyqmbffow`
+   - **Project Name:** `archive-oracle`
+   - **Region:** West EU (Ireland)
+   - **Purpose:** Test/Development environment only
+   
+   ⚠️ **DO NOT** proceed if verification fails. Connecting to the wrong project could affect production data.
+
+5. **Run the development server**:
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**:
+6. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
 
 For detailed setup instructions, including how to obtain API keys and configure external services, see the [Getting Started Guide](docs/guides/getting-started.md).
@@ -175,6 +223,22 @@ This glossary explains technical terms used throughout the project:
 - **Serverless**: A cloud computing model where code runs in stateless functions that are automatically managed by the cloud provider, eliminating the need to manage servers.
 
 ## Configuration
+
+### ⚠️ Test Project Configuration
+
+**IMPORTANT:** This repository is configured to connect **ONLY** to the test Supabase project. See [supabase/TEST_PROJECT.md](supabase/TEST_PROJECT.md) for details.
+
+**Quick verification commands:**
+```bash
+# Verify project connection
+npm run verify:project
+
+# Verify database structure
+npm run verify:data
+
+# Run both verifications
+npm run verify
+```
 
 ### Discord OAuth Setup
 
