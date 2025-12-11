@@ -891,6 +891,29 @@ function generateTESTDATA(outputDir, inputFile) {
       md += `- ... and ${warnings.length - 10} more warnings\n`;
     }
     md += '\n';
+    
+    // Check if there are circular dependency warnings
+    const circularDependencyWarnings = warnings.filter(w => w.includes('Circular dependency detected'));
+    if (circularDependencyWarnings.length > 0) {
+      md += '#### Understanding Circular Dependency Warnings\n\n';
+      md += 'These warnings occur because some tables have **self-referencing foreign keys**:\n';
+      md += '- `docs_page.parent_page_id` → `docs_page.id`\n';
+      md += '- `nods_page.parent_page_id` → `nods_page.id`\n\n';
+      md += '**Are these warnings a problem?**\n\n';
+      md += '- **No, if you\'re not inserting data into these tables**: The warnings are informational and don\'t affect execution. ';
+      md += 'If your seed data doesn\'t include rows for these tables, they can be safely ignored.\n';
+      md += '- **Yes, if you need to insert hierarchical data**: Self-referencing tables require special handling for INSERT ordering.\n\n';
+      md += '**How to resolve if inserting hierarchical data:**\n\n';
+      md += 'If you need to insert data into tables with parent-child relationships:\n\n';
+      md += '1. **Insert root nodes first**: Rows with `parent_page_id = NULL`\n';
+      md += '2. **Then insert child nodes**: Rows that reference those root nodes\n';
+      md += '3. **Continue level by level**: Insert each level of the hierarchy sequentially\n\n';
+      md += 'The current topological sort algorithm detects these cycles but doesn\'t automatically handle hierarchical ordering. ';
+      md += 'For hierarchical data, you may need to:\n';
+      md += '- Manually order INSERTs for these tables in your seed data\n';
+      md += '- Insert rows with NULL foreign keys first, then rows that reference them\n';
+      md += '- Or enhance the script to detect self-referencing tables and handle them specially\n\n';
+    }
   }
 
   md += '## Regeneration Instructions\n\n';
@@ -908,6 +931,13 @@ function generateTESTDATA(outputDir, inputFile) {
 
   md += '### Duplicate Key Violations\n';
   md += 'The tool skips duplicates automatically. Check TESTDATA.md for warnings about skipped duplicates.\n\n';
+
+  md += '### Circular Dependency Warnings\n';
+  md += 'If you see warnings about circular dependencies (e.g., `docs_page`, `nods_page`):\n';
+  md += '- These are **informational only** if no data is inserted into those tables\n';
+  md += '- They occur because these tables have self-referencing foreign keys (parent-child relationships)\n';
+  md += '- The script still works correctly - it just can\'t automatically determine optimal INSERT order for hierarchical data\n';
+  md += '- If inserting hierarchical data, manually order INSERTs: root nodes (NULL parent) first, then children\n\n';
 
   return md;
 }
