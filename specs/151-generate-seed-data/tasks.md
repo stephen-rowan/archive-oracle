@@ -14,14 +14,14 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3, US4)
+- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
 ## Path Conventions
 
-- **CLI Script**: `scripts/generate-seed-data.js` (or module structure in `scripts/generate-seed-data/`)
+- **CLI Script**: `scripts/generate-seed-data.js` (standalone Node.js utility)
 - **Node.js**: Built-in modules only (fs, path, crypto, process.argv)
-- Paths assume single-file script initially (can refactor to module structure if complexity grows)
+- Paths assume single-file script (can refactor to module structure if complexity grows)
 
 ---
 
@@ -30,7 +30,7 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 **Purpose**: Project initialization and basic structure
 
 - [ ] T001 Create project structure for CLI script in scripts/generate-seed-data.js
-- [ ] T002 Initialize Node.js script with shebang and basic CLI argument parsing using process.argv
+- [ ] T002 Initialize Node.js script with shebang and basic CLI argument parsing using process.argv in scripts/generate-seed-data.js
 - [ ] T003 [P] Add file I/O utilities for reading JSON and schema.sql files in scripts/generate-seed-data.js
 - [ ] T004 [P] Add error handling infrastructure (error collection arrays, console.error/console.warn) in scripts/generate-seed-data.js
 
@@ -42,7 +42,7 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Implement SQL parser module to extract CREATE TABLE statements from schema.sql in scripts/generate-seed-data.js
+- [ ] T005 Implement SQL parser module to extract CREATE TABLE statements from schema.sql using regex patterns in scripts/generate-seed-data.js
 - [ ] T006 [P] Implement table structure extraction (table name, columns, data types) from parsed CREATE TABLE statements in scripts/generate-seed-data.js
 - [ ] T007 [P] Implement constraint extraction (PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL) from parsed CREATE TABLE statements in scripts/generate-seed-data.js
 - [ ] T008 Implement dependency graph builder from FOREIGN KEY constraints in scripts/generate-seed-data.js
@@ -133,38 +133,17 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 
 ---
 
-## Phase 6: User Story 4 - Clear Test Data (Priority: P2)
-
-**Goal**: Generate clear.sql file with TRUNCATE statements to reset test database, enabling developers to easily clear and reload test data
-
-**Independent Test**: Verify clear.sql executes successfully against database with test data, removing all test records without errors, and verify database can be repopulated after clearing
-
-### Implementation for User Story 4
-
-- [ ] T052 [US4] Implement table dependency analysis for TRUNCATE ordering (reverse dependency order) in scripts/generate-seed-data.js
-- [ ] T053 [US4] Implement TRUNCATE statement generation with CASCADE option for foreign key handling in scripts/generate-seed-data.js
-- [ ] T054 [US4] Implement clear.sql file generation with properly ordered TRUNCATE statements in scripts/generate-seed-data.js
-- [ ] T055 [US4] Implement TRUNCATE statement ordering (child tables before parent tables to satisfy foreign key constraints) in scripts/generate-seed-data.js
-- [ ] T056 [US4] Implement clear.sql file writing to same directory as input JSON file in scripts/generate-seed-data.js
-- [ ] T057 [US4] Add clear.sql usage instructions to TESTDATA.md (how to clear test data before reloading) in scripts/generate-seed-data.js
-- [ ] T058 [US4] Add clear.sql execution examples (psql and Supabase CLI commands) to TESTDATA.md in scripts/generate-seed-data.js
-- [ ] T059 [US4] Add clear.sql safety warnings (backup recommendations, production database warnings) to TESTDATA.md in scripts/generate-seed-data.js
-
-**Checkpoint**: At this point, User Story 4 should be fully functional - tool generates clear.sql file for resetting test database
-
----
-
-## Phase 7: Polish & Cross-Cutting Concerns
+## Phase 6: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T060 [P] Add comprehensive console logging (progress messages, statistics output) in scripts/generate-seed-data.js
-- [ ] T061 [P] Implement performance optimization (handle 127+ records efficiently, memory management) in scripts/generate-seed-data.js
-- [ ] T062 [P] Add input validation improvements (malformed JSON detection, schema file validation) in scripts/generate-seed-data.js
-- [ ] T063 [P] Implement edge case handling improvements (empty arrays, null values, very large files) in scripts/generate-seed-data.js
-- [ ] T064 [P] Add code comments and documentation within script file in scripts/generate-seed-data.js
-- [ ] T065 Run quickstart.md validation (test tool with example workflow from quickstart.md) manually
-- [ ] T066 Verify all generated files (seed.sql, mapping.json, TESTDATA.md, clear.sql) are valid and complete manually
+- [ ] T052 [P] Add comprehensive console logging (progress messages, statistics output) in scripts/generate-seed-data.js
+- [ ] T053 [P] Implement performance optimization (handle 127+ records efficiently, memory management, stream processing for 1000+ records) in scripts/generate-seed-data.js
+- [ ] T054 [P] Add input validation improvements (malformed JSON detection, schema file validation) in scripts/generate-seed-data.js
+- [ ] T055 [P] Implement edge case handling improvements (empty arrays, null values, very large files) in scripts/generate-seed-data.js
+- [ ] T056 [P] Add code comments and documentation within script file in scripts/generate-seed-data.js
+- [ ] T057 Run quickstart.md validation (test tool with example workflow from quickstart.md) manually
+- [ ] T058 Verify all generated files (seed.sql, mapping.json, TESTDATA.md) are valid and complete manually
 
 ---
 
@@ -175,17 +154,15 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **User Stories (Phase 3+)**: All depend on Foundational phase completion
-  - User stories can then proceed sequentially in priority order (P1 → P2 → P2 → P2)
-  - US2 and US3 can potentially run in parallel after US1 (different output files)
-  - US4 can start after US1 completes (needs table dependency information)
-- **Polish (Phase 7)**: Depends on all desired user stories being complete
+  - User stories proceed sequentially in priority order (P1 → P2 → P2)
+  - US2 and US3 can potentially run in parallel after US1 (different output files, both depend on US1 data)
+- **Polish (Phase 6)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 transformation logic (needs mapping data collected during US1 processing)
 - **User Story 3 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 transformation logic (needs statistics and error data collected during US1 processing)
-- **User Story 4 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 table dependency information (needs table structure and foreign key relationships)
 
 ### Within Each User Story
 
@@ -199,7 +176,7 @@ description: "Task list for Generate Test Seed Data From JSON and Map to schema.
 - All Setup tasks marked [P] can run in parallel
 - All Foundational tasks marked [P] can run in parallel (within Phase 2)
 - Once Foundational phase completes, US1 can start
-- After US1 completes, US2, US3, and US4 can potentially run in parallel (they depend on US1 data but generate different output files)
+- After US1 completes, US2 and US3 can potentially run in parallel (they depend on US1 data but generate different output files)
 - All Polish tasks marked [P] can run in parallel
 
 ---
@@ -217,6 +194,23 @@ Task: "Implement SQL INSERT statement generation for workgroups table"
 Task: "Implement SQL INSERT statement generation for names table"
 Task: "Implement SQL INSERT statement generation for tags table"
 Task: "Implement SQL INSERT statement generation for meetingsummaries table"
+```
+
+---
+
+## Parallel Example: User Stories 2 and 3
+
+```bash
+# After US1 completes, US2 and US3 can run in parallel:
+# US2: Generate mapping.json
+Task: "Implement mapping structure builder"
+Task: "Implement mapping entry creation for direct field mappings"
+Task: "Implement mapping.json file writing"
+
+# US3: Generate TESTDATA.md
+Task: "Implement TESTDATA.md template structure"
+Task: "Implement usage instructions generation"
+Task: "Implement TESTDATA.md file writing"
 ```
 
 ---
@@ -240,8 +234,7 @@ Task: "Implement SQL INSERT statement generation for meetingsummaries table"
 2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)
 3. Add User Story 2 → Test independently → Deploy/Demo
 4. Add User Story 3 → Test independently → Deploy/Demo
-5. Add User Story 4 → Test independently → Deploy/Demo
-6. Each story adds value without breaking previous stories
+5. Each story adds value without breaking previous stories
 
 ### Sequential Strategy (Recommended)
 
@@ -252,8 +245,7 @@ With single developer:
 3. Complete Phase 3: User Story 1 (T013-T035) - Core functionality
 4. Complete Phase 4: User Story 2 (T036-T043) - Mapping documentation
 5. Complete Phase 5: User Story 3 (T044-T051) - Usage documentation
-6. Complete Phase 6: User Story 4 (T052-T059) - Clear test data
-7. Complete Phase 7: Polish (T060-T066) - Improvements
+6. Complete Phase 6: Polish (T052-T058) - Improvements
 
 ---
 
@@ -270,3 +262,43 @@ With single developer:
 - Deterministic UUID generation uses SHA-256 hash of context strings
 - SQL parsing uses regex/string parsing (no external SQL parser library)
 - CLI argument parsing uses process.argv (no external CLI library)
+- Stream/incremental processing for files with 1000+ records (per FR-023)
+
+---
+
+## Task Summary
+
+- **Total Tasks**: 58
+- **Setup Tasks**: 4 (T001-T004)
+- **Foundational Tasks**: 8 (T005-T012)
+- **User Story 1 Tasks**: 23 (T013-T035) - MVP
+- **User Story 2 Tasks**: 8 (T036-T043)
+- **User Story 3 Tasks**: 8 (T044-T051)
+- **Polish Tasks**: 7 (T052-T058)
+
+### Task Count per User Story
+
+- **User Story 1 (P1)**: 23 tasks - Core SQL generation functionality
+- **User Story 2 (P2)**: 8 tasks - Mapping documentation
+- **User Story 3 (P2)**: 8 tasks - Usage documentation
+
+### Parallel Opportunities Identified
+
+- Setup phase: 2 parallel tasks (T003, T004)
+- Foundational phase: 4 parallel tasks (T006, T007, T010, T011)
+- User Story 1: Multiple extraction tasks can run in parallel, multiple SQL generation tasks can run in parallel
+- User Stories 2 and 3: Can run in parallel after US1 completes
+- Polish phase: 5 parallel tasks (T052-T056)
+
+### Independent Test Criteria
+
+- **User Story 1**: Run tool with valid JSON and schema inputs, verify generated seed.sql executes successfully against fresh database with zero constraint violations
+- **User Story 2**: Verify mapping.json accurately reflects all transformations performed, with clear documentation of source JSON paths and target SQL table/column mappings
+- **User Story 3**: Verify developer following TESTDATA.md can successfully load seed data into local database without errors
+
+### Suggested MVP Scope
+
+- **MVP**: User Story 1 only (Phases 1-3)
+- **Rationale**: Core value proposition - enables developers to generate seed.sql from JSON input
+- **Deliverable**: Functional CLI tool that generates seed.sql file
+- **Next Steps After MVP**: Add User Story 2 (mapping documentation) and User Story 3 (usage documentation) for complete developer experience
