@@ -494,14 +494,19 @@ function extractMeetingSummary(meetingSummary, workgroupData, recordId) {
     return null;
   }
 
-  const name = meetingInfo.name;
+  // Try to get name from meetingInfo.name, or generate from available fields
+  let name = meetingInfo.name;
+  if (!name) {
+    // Generate name from workgroup + typeOfMeeting + date
+    const typeOfMeeting = meetingInfo.typeOfMeeting || 'Meeting';
+    const dateStr = meetingInfo.date;
+    const workgroup = workgroupData?.workgroup || 'Unknown Workgroup';
+    name = `${workgroup} - ${typeOfMeeting}${dateStr ? ' - ' + dateStr : ''}`;
+    addWarning(`Missing meetingInfo.name, generated name: ${name}`, recordId);
+  }
+  
   const dateStr = meetingInfo.date;
   const workgroupId = workgroupData?.workgroup_id;
-
-  if (!name) {
-    addError('Missing meetingInfo.name field', recordId);
-    return null;
-  }
 
   if (!dateStr) {
     addError('Missing meetingInfo.date field', recordId);
@@ -525,7 +530,9 @@ function extractMeetingSummary(meetingSummary, workgroupData, recordId) {
   // Track mappings (only once per unique mapping)
   const mappingKey = `meetingInfo.name|meetingsummaries|name`;
   if (!mappings.find(m => m.jsonPath === 'meetingInfo.name' && m.table === 'meetingsummaries' && m.column === 'name')) {
-    addMapping('meetingInfo.name', 'meetingsummaries', 'name', 'direct', false);
+    // Check if name was generated or came from field
+    const transformation = meetingInfo.name ? 'direct' : 'generated-from-workgroup-typeofmeeting-date';
+    addMapping('meetingInfo.name', 'meetingsummaries', 'name', transformation, false);
   }
   if (!mappings.find(m => m.jsonPath === 'meetingInfo.date' && m.table === 'meetingsummaries' && m.column === 'date')) {
     addMapping('meetingInfo.date', 'meetingsummaries', 'date', 'parse-iso-date', false);

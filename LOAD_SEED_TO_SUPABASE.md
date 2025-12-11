@@ -119,8 +119,8 @@ PGPASSWORD=postgres psql -h localhost -p 54322 -U postgres -d postgres -f test-o
 # For local Supabase - Execute seed.sql directly
 psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/seed.sql
 
-# Or using supabase db psql
-supabase db psql -f supabase/seed.sql
+# Note: supabase db psql does NOT support the -f flag
+# You must use psql directly with the connection string
 ```
 
 ### Option C: Using psql with connection string
