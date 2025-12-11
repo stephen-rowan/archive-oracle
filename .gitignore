@@ -38,3 +38,6 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+
+# Supabase temp files (contains project reference)
+supabase/.temp/
