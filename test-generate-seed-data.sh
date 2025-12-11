@@ -53,7 +53,7 @@ echo ""
 
 # Run the script
 echo "Running script..."
-node ../scripts/generate-seed-data.js test-meetings.json schema.sql 2>&1
+node ../scripts/generate-seed-data.js test-meetings.json ../schema.sql 2>&1
 EXIT_CODE=$?
 
 echo ""

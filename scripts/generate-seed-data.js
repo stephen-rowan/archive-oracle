@@ -123,15 +123,18 @@ function extractConstraints(schemaContent, tableName) {
     notNull: []
   };
 
-  // Find PRIMARY KEY
-  const pkRegex = new RegExp(`ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+PRIMARY\\s+KEY\\s*\\(["']?(${tableName}|\\w+)["']?\\.)?["']?(\\w+)["']?\\)`, 'gi');
+  // Escape tableName for use in regex
+  const escapedTableName = tableName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Find PRIMARY KEY - matches: ALTER TABLE ONLY "public"."table_name" ... ADD CONSTRAINT ... PRIMARY KEY ("column_name")
+  const pkRegex = new RegExp(`ALTER\\s+TABLE\\s+ONLY\\s+(?:["']?public["']?\\.)?["']?${escapedTableName}["']?[\\s\\S]*?ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+PRIMARY\\s+KEY\\s*\\(["']?(\\w+)["']?\\)`, 'gi');
   let match = pkRegex.exec(schemaContent);
   if (match) {
-    constraints.primaryKey = match[2] || match[1];
+    constraints.primaryKey = match[1];
   }
 
-  // Find FOREIGN KEY constraints
-  const fkRegex = new RegExp(`ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+FOREIGN\\s+KEY\\s*\\(["']?(\\w+)["']?\\)\\s+REFERENCES\\s+(?:["']?public["']?\.)?["']?(\\w+)["']?\\(["']?(\\w+)["']?\\)`, 'gi');
+  // Find FOREIGN KEY constraints - matches: ALTER TABLE ONLY "public"."table_name" ... ADD CONSTRAINT ... FOREIGN KEY ("column") REFERENCES "public"."ref_table"("ref_column")
+  const fkRegex = new RegExp(`ALTER\\s+TABLE\\s+ONLY\\s+(?:["']?public["']?\\.)?["']?${escapedTableName}["']?[\\s\\S]*?ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+FOREIGN\\s+KEY\\s*\\(["']?(\\w+)["']?\\)\\s+REFERENCES\\s+(?:["']?public["']?\\.)?["']?(\\w+)["']?\\(["']?(\\w+)["']?\\)`, 'gi');
   while ((match = fkRegex.exec(schemaContent)) !== null) {
     constraints.foreignKeys.push({
       column: match[1],
@@ -140,8 +143,8 @@ function extractConstraints(schemaContent, tableName) {
     });
   }
 
-  // Find UNIQUE constraints
-  const uniqueRegex = new RegExp(`ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+UNIQUE\\s*\\(([^)]+)\\)`, 'gi');
+  // Find UNIQUE constraints - matches: ALTER TABLE ONLY "public"."table_name" ... ADD CONSTRAINT ... UNIQUE (...)
+  const uniqueRegex = new RegExp(`ALTER\\s+TABLE\\s+ONLY\\s+(?:["']?public["']?\\.)?["']?${escapedTableName}["']?[\\s\\S]*?ADD\\s+CONSTRAINT\\s+["']?\\w+["']?\\s+UNIQUE\\s*\\(([^)]+)\\)`, 'gi');
   while ((match = uniqueRegex.exec(schemaContent)) !== null) {
     const columns = match[1].split(',').map(c => c.trim().replace(/["']/g, ''));
     constraints.unique.push(columns);
@@ -297,10 +300,12 @@ function extractWorkgroup(meetingSummary, recordId) {
     addMapping('workgroup_id', 'workgroups', 'workgroup_id', transformation, false, workgroup);
   }
 
+  const meetingDate = parseISODate(meetingSummary.meetingInfo?.date) || new Date();
+  
   return {
     workgroup_id: finalWorkgroupId,
     workgroup: workgroup,
-    created_at: meetingSummary.meetingInfo?.date || new Date(),
+    created_at: meetingDate,
     user_id: generateDeterministicUUID(`user:${workgroup}:user`),
     preferred_template: null
   };

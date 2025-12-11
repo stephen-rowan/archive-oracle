@@ -1,0 +1,32 @@
+[
+  {
+    "workgroup": "Test Workgroup",
+    "workgroup_id": "72ce0bc0-276e-4cde-bfb9-cdabc5ed953e",
+    "meetingInfo": {
+      "name": "Test Meeting",
+      "date": "2025-01-27",
+      "host": "Alice",
+      "documenter": "Bob",
+      "peoplePresent": "Alice, Bob, Carol"
+    },
+    "agendaItems": [],
+    "tags": {
+      "topicsCovered": "testing, development",
+      "emotions": "focused, productive"
+    },
+    "type": "custom"
+  },
+  {
+    "workgroup": "Another Workgroup",
+    "meetingInfo": {
+      "name": "Second Meeting",
+      "date": "2025-01-28",
+      "peoplePresent": "Dave, Eve"
+    },
+    "agendaItems": [],
+    "tags": {
+      "gamesPlayed": "Chess"
+    },
+    "type": "custom"
+  }
+]

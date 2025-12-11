@@ -1,0 +1,209 @@
+{
+  "version": "1.0",
+  "generatedAt": "2025-12-11T08:32:38.054Z",
+  "inputFile": "test-meetings.json",
+  "schemaFile": "../schema.sql",
+  "mappings": [
+    {
+      "jsonPath": "workgroup",
+      "table": "workgroups",
+      "column": "workgroup",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "workgroup_id",
+      "table": "workgroups",
+      "column": "workgroup_id",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": "Test Workgroup"
+    },
+    {
+      "jsonPath": "meetingInfo.peoplePresent",
+      "table": "names",
+      "column": "name",
+      "transformation": "extract-comma-separated",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.topicsCovered",
+      "table": "tags",
+      "column": "tag",
+      "transformation": "extract-comma-separated",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.topicsCovered",
+      "table": "tags",
+      "column": "type",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.emotions",
+      "table": "tags",
+      "column": "tag",
+      "transformation": "extract-comma-separated",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.emotions",
+      "table": "tags",
+      "column": "type",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "meetingInfo.name",
+      "table": "meetingsummaries",
+      "column": "name",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "meetingInfo.date",
+      "table": "meetingsummaries",
+      "column": "date",
+      "transformation": "parse-iso-date",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "workgroup_id",
+      "table": "meetingsummaries",
+      "column": "workgroup_id",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "type",
+      "table": "meetingsummaries",
+      "column": "template",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "*",
+      "table": "meetingsummaries",
+      "column": "summary",
+      "transformation": "json-stringify",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.gamesPlayed",
+      "table": "tags",
+      "column": "tag",
+      "transformation": "extract-comma-separated",
+      "synthetic": false,
+      "context": null
+    },
+    {
+      "jsonPath": "tags.gamesPlayed",
+      "table": "tags",
+      "column": "type",
+      "transformation": "direct",
+      "synthetic": false,
+      "context": null
+    }
+  ],
+  "syntheticFields": [
+    {
+      "table": "workgroups",
+      "column": "created_at",
+      "generation": "timestamp",
+      "source": "meeting date"
+    },
+    {
+      "table": "workgroups",
+      "column": "user_id",
+      "generation": "deterministic-uuid",
+      "source": "workgroup name"
+    },
+    {
+      "table": "workgroups",
+      "column": "preferred_template",
+      "generation": "default",
+      "source": "NULL"
+    },
+    {
+      "table": "names",
+      "column": "user_id",
+      "generation": "deterministic-uuid",
+      "source": "name context"
+    },
+    {
+      "table": "names",
+      "column": "approved",
+      "generation": "default",
+      "source": "true"
+    },
+    {
+      "table": "names",
+      "column": "created_at",
+      "generation": "timestamp",
+      "source": "meeting date"
+    },
+    {
+      "table": "tags",
+      "column": "user_id",
+      "generation": "deterministic-uuid",
+      "source": "tag + type context"
+    },
+    {
+      "table": "tags",
+      "column": "created_at",
+      "generation": "timestamp",
+      "source": "meeting date"
+    },
+    {
+      "table": "meetingsummaries",
+      "column": "meeting_id",
+      "generation": "deterministic-uuid",
+      "source": "name + date + workgroup_id"
+    },
+    {
+      "table": "meetingsummaries",
+      "column": "user_id",
+      "generation": "deterministic-uuid",
+      "source": "workgroup context"
+    },
+    {
+      "table": "meetingsummaries",
+      "column": "confirmed",
+      "generation": "default",
+      "source": "false"
+    },
+    {
+      "table": "meetingsummaries",
+      "column": "created_at",
+      "generation": "timestamp",
+      "source": "meeting date"
+    },
+    {
+      "table": "meetingsummaries",
+      "column": "updated_at",
+      "generation": "timestamp",
+      "source": "meeting date"
+    }
+  ],
+  "statistics": {
+    "totalRecords": 2,
+    "workgroups": 2,
+    "meetings": 2,
+    "names": 5,
+    "tags": 5,
+    "errors": 0,
+    "warnings": 2
+  }
+}
