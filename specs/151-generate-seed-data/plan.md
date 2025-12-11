@@ -7,59 +7,58 @@
 
 ## Summary
 
-This feature creates a command-line tool that generates PostgreSQL seed data files (`seed.sql`) from JSON meeting summary data, mapping JSON fields to database schema tables. The tool parses `schema.sql` to understand table structures, dependencies, and constraints, then transforms JSON meeting summaries into properly ordered INSERT statements with correct foreign key relationships. The tool also generates mapping documentation (`mapping.json`) and developer usage instructions (`TESTDATA.md`). The technical approach involves SQL parsing, JSON transformation, dependency graph resolution for INSERT ordering, and deterministic UUID generation for referential integrity.
+This feature implements a Node.js CLI tool that transforms JSON meeting summary data into PostgreSQL seed SQL files. The tool parses a JSON array of meeting summaries and a PostgreSQL schema file (`schema.sql`), then generates three output files: `seed.sql` (INSERT statements), `mapping.json` (transformation documentation), and `TESTDATA.md` (usage instructions). The technical approach uses lightweight regex-based SQL parsing (no external SQL parser library), deterministic UUID generation via SHA-256 hashing, and topological sorting for INSERT statement ordering to satisfy foreign key constraints.
 
 ## Technical Context
 
-**Language/Version**: Node.js 20.3.1, TypeScript 5.1.3 (or JavaScript ES5+)  
+**Language/Version**: Node.js 20.3.1+, JavaScript (ES5+)  
 **Primary Dependencies**: 
-- PostgreSQL SQL parser library (NEEDS CLARIFICATION: which library for parsing CREATE TABLE statements)
-- Built-in Node.js modules: `fs`, `path`, `crypto` (for deterministic UUID generation)
-- JSON parsing (built-in `JSON.parse`)
-- Command-line argument parsing (NEEDS CLARIFICATION: use `process.argv` directly or a library like `yargs`/`commander`)
+- Node.js built-in modules: `fs`, `path`, `crypto` (for UUID generation)
+- No external dependencies required (standalone CLI utility)
 
-**Storage**: File-based I/O (read JSON input, write SQL/markdown/JSON output files)  
-**Testing**: NEEDS CLARIFICATION (no formal test framework detected in codebase - consider Jest, Mocha, or Node.js built-in test runner)  
-**Target Platform**: Node.js CLI tool (cross-platform: macOS, Linux, Windows)  
-**Project Type**: Standalone CLI utility (single Node.js script or small module)  
-**Performance Goals**: Process JSON files with 127+ meeting summaries in under 5 minutes (as per SC-001)  
+**Storage**: File-based I/O (reads JSON input, writes SQL/Markdown/JSON output files)  
+**Testing**: Manual testing initially (matches codebase patterns - no formal test framework detected)  
+**Target Platform**: Cross-platform (macOS, Linux, Windows) - Node.js CLI tool  
+**Project Type**: Standalone CLI utility (single Node.js script)  
+**Performance Goals**: Process 127+ meeting summaries in under 5 minutes (SC-001), handle up to 1000 records in-memory, use stream/incremental processing for larger files  
 **Constraints**: 
-- Must generate deterministic UUIDs (same input → same UUID) for reproducible seed data
-- Must handle invalid/malformed data gracefully (skip with warnings, continue processing)
-- Must preserve referential integrity (all foreign keys must reference existing rows)
-- Must order INSERTs correctly to satisfy foreign key constraints
-- Output files written to same directory as input JSON file
+- Must generate deterministic UUIDs (same input → same UUID for reproducible seed data)
+- Must handle invalid/malformed data gracefully (log errors, skip records, continue processing)
+- Must satisfy all foreign key constraints (topological sort for INSERT ordering)
+- Must validate data types and constraints before generating SQL
+- Memory-efficient for large files (stream processing threshold: 1000 records)
 
 **Scale/Scope**: 
-- Input: Single JSON file containing array of meeting summary objects (127+ records expected)
-- Output: Three files (`seed.sql`, `mapping.json`, `TESTDATA.md`) written to input directory
-- Database schema: ~15 tables (workgroups, meetingsummaries, names, tags, archives, etc.) with foreign key relationships
-- JSON structure: Nested objects with arrays (agendaItems containing actionItems/decisionItems, comma-separated lists for peoplePresent)
+- Input: JSON files with 127+ meeting summaries (up to 1000+ records)
+- Output: Three files per execution (seed.sql, mapping.json, TESTDATA.md)
+- Tables: Primary focus on `workgroups`, `meetingsummaries`, `names`, `tags` tables from schema.sql
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Status**: ✅ PASSED (with notes)
+**Status**: ✅ PASSED
 
-**Analysis**: The constitution file (`.specify/memory/constitution.md`) appears to be a template that hasn't been filled in with project-specific principles. However, based on the codebase structure and this feature's requirements:
+**Evaluation**:
+- Constitution file (`.specify/memory/constitution.md`) appears to be a template and hasn't been customized for this project
+- No specific constitutional constraints identified that would block this feature
+- Feature aligns with existing codebase patterns:
+  - Standalone utility scripts (similar to existing scripts in `scripts/` and `utils/`)
+  - No external dependencies (matches lightweight approach)
+  - Manual testing approach (consistent with codebase)
+  - File-based I/O (standard Node.js patterns)
 
-**Applicable Principles** (inferred from codebase patterns):
-- **Simplicity**: CLI tool with clear single responsibility (JSON → SQL transformation)
-- **Deterministic Output**: Synthetic values must be deterministic for reproducible test data
-- **Error Handling**: Graceful degradation (skip invalid records, log warnings, continue processing)
-- **Documentation**: Generate comprehensive mapping documentation and usage instructions
-
-**No Violations**: This is a standalone utility tool that doesn't introduce architectural complexity or violate development principles. It follows existing codebase patterns (file-based utilities in `utils/`, scripts in `scripts/`).
-
-**Note**: Constitution template should be filled in for future features, but doesn't block this implementation.
+**Post-Phase 1 Re-evaluation**: ✅ PASSED
+- Design artifacts (data-model.md, contracts/, quickstart.md) complete
+- No constitutional violations identified
+- Implementation approach is consistent with project structure
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/151-generate-seed-data/
+specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
@@ -70,94 +69,25 @@ specs/151-generate-seed-data/
 
 ### Source Code (repository root)
 
-**Structure Decision**: Standalone CLI utility script in `scripts/` directory (consistent with existing `scripts/export-schema.sh`, `scripts/export-schema-supabase-cli.sh`)
-
 ```text
 scripts/
-├── generate-seed-data.js    # Main CLI entry point (or .ts if TypeScript)
-└── generate-seed-data/     # Alternative: module structure if more complex
-    ├── index.js
-    ├── sql-parser.js        # Parse schema.sql to extract table definitions
-    ├── json-transformer.js  # Transform JSON to SQL INSERT statements
-    ├── dependency-resolver.js # Resolve INSERT ordering based on foreign keys
-    └── uuid-generator.js    # Deterministic UUID generation
+└── generate-seed-data.js    # Main CLI script (standalone Node.js utility)
 
-# No separate tests/ directory needed initially (manual testing acceptable per codebase patterns)
-# If formal testing added later, place in scripts/generate-seed-data/__tests__/
+# No separate test directory - manual testing approach (matches codebase patterns)
+# No separate models/services - single script with inline functions
 ```
 
-**Rationale**: 
-- Follows existing codebase pattern (utilities in `scripts/` or `utils/`)
-- Simple single-file script sufficient for MVP (can refactor to module structure if complexity grows)
-- No need for separate test directory initially (codebase doesn't have formal test framework setup)
+**Structure Decision**: 
+- Single standalone Node.js script in `scripts/` directory (consistent with existing utility scripts)
+- No external dependencies or complex project structure needed
+- Script will be executable directly via `node scripts/generate-seed-data.js`
+- Output files written to same directory as input JSON file (as specified in requirements)
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-No violations - this is a straightforward CLI utility with clear single responsibility.
-
-## Phase Completion Status
-
-### Phase 0: Outline & Research ✅ COMPLETE
-
-**Deliverables**:
-- ✅ `research.md` - Resolved all NEEDS CLARIFICATION items:
-  - SQL parser approach (regex/string parsing)
-  - CLI argument parsing (`process.argv`)
-  - Testing strategy (manual testing)
-  - Deterministic UUID generation (SHA-256 hash)
-  - INSERT ordering (dependency graph + topological sort)
-  - Error handling and logging strategy
-
-**Status**: All technical unknowns resolved, ready for implementation.
-
-### Phase 1: Design & Contracts ✅ COMPLETE
-
-**Deliverables**:
-- ✅ `data-model.md` - Complete data model documentation:
-  - Input JSON structure
-  - Database schema entities and relationships
-  - Data transformation rules
-  - Validation rules
-  - Error handling scenarios
-  - Deterministic value generation strategies
-
-- ✅ `contracts/cli-interface.md` - CLI interface specification:
-  - Command syntax and arguments
-  - Input/output file formats
-  - Behavior specification
-  - Error handling and exit codes
-  - Validation rules
-  - Performance requirements
-
-- ✅ `quickstart.md` - Developer usage guide:
-  - Installation instructions
-  - Basic usage examples
-  - Database loading instructions
-  - Common issues and solutions
-  - Example workflow
-
-- ✅ Agent context updated - Technology decisions added to `.cursor/rules/specify-rules.mdc`
-
-**Status**: Design complete, contracts defined, ready for task breakdown (Phase 2).
-
-## Next Steps
-
-**Phase 2**: Task Breakdown (via `/speckit.tasks` command)
-- Break down implementation into specific, actionable tasks
-- Define task dependencies and ordering
-- Estimate complexity and effort
-
-**Implementation**: After task breakdown, proceed with:
-1. Implement SQL parser module
-2. Implement JSON transformer module
-3. Implement dependency resolver module
-4. Implement UUID generator module
-5. Implement main CLI script
-6. Test with sample JSON files
-7. Generate documentation
-
-## Summary
-
-This implementation plan defines a CLI tool that transforms JSON meeting summary data into PostgreSQL seed SQL files. The tool parses `schema.sql` to understand table structures and dependencies, then generates properly ordered INSERT statements with correct foreign key relationships. All technical decisions have been made, design artifacts are complete, and the tool is ready for implementation.
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
